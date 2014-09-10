@@ -1,0 +1,7 @@
+*.o
+*.a
+*.tdt
+*.stg
+*.lst
+*.axf
+Binary/
