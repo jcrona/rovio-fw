@@ -10,7 +10,7 @@
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     
-    <script>if(navigator.platform == 'iPod' || navigator.platform == 'iPhone'){ window.location.href = 'mobile/iph.htm'; }
+    <script>if(navigator.platform == 'iPxxod' || navigator.platform == 'iPxxhone'){ window.location.href = 'mobile/iph.htm'; }
     if(navigator.platform == 'WinCE' || navigator.platform == 'Series60'){ window.location.href = 'mobile/index.htm'; }
     if(navigator.platform == 'Nitro'){ window.location.href = 'mobile/ds.htm';  }
     </script>
@@ -469,6 +469,13 @@
                     <td><input id="net_dns0" onkeypress="$('net_save').disabled = false; $('net_wifi_changed').checked = true;" /></td>
                 </tr>
                 </tbody>
+		<tr>
+		    <td colspan="2" class="tabheading">Watchdog Settings (optional) <script>document.write(returnHelpBtn('watchdog_settings_help'))</script></td>
+                </tr>
+		<tr>
+                    <td>Server IP:</td>
+                    <td><input id="wdog_ip" onkeypress="$('net_save').disabled = false; $('net_upnp_changed').checked = true;"  /></td>
+                </tr>
                 <tr>
                     <td colspan="2" class="tabheading">Internet Access <script>document.write(returnHelpBtn('internet_access_help'))</script></td>
                 </tr>

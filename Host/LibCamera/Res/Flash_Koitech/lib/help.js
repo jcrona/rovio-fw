@@ -202,6 +202,13 @@ function showHelp(id){
             text += '<p><strong>Password</strong> specifies proxy server password.</p>';
             text += 'For more information, visit ' + returnSupportLink('WowWee Support') + '.';
             break;
+        case 'watchdog_settings_help':
+            heading = 'Watchdog Settings (optional)';
+            text = 'Allows you to define a target server IP address for rovio watchdog. ';
+	    text += 'If the watchdog cannot contact the target server IP for 1 minute, ';
+	    text += 'it will assume there are some problem with the rovio HTTP server or WiFi ';
+	    text += 'and reboot the rovio.';
+            break;
         case 'dyndomain_status_help':
             heading = 'Check Status';
             text = 'The Check Status button displays a message with the current status of your dynamic domain.';

@@ -1,8 +1,8 @@
 /* Copyright (C) 2008 WowWee Group Ltd. */
 /* Author: Josh Savage */
 
-/* --- Version 5.03b --- */
-var UI_VERSION = '5.03b';
+/* --- Version 5.03s --- */
+var UI_VERSION = '5.03s';
 var ppp_firmware_enabled = true;
 var portal_address = 'http://www.wowweesupport.com/portal';
 
@@ -2333,6 +2333,8 @@ function resetNetworkFields(){
     $('net_upnpenabled').checked = 1;
     $('net_upnpport').value = '8168';
     $('net_internetip').value = '';
+
+    $('wdog_ip').value = '';
     
     $('net_verify_access').checked = 1;
     $('net_include_status').checked = 1;
@@ -2382,6 +2384,9 @@ var loadUPnPResponse = function(t) {
             case 'RTSP_UDP':
                 upnp_udp_port = parseInt(v);
                 break;        
+	    case 'WatchdogIP':
+		$('wdog_ip').value = v;
+		break;
         }
     }
     
@@ -3016,9 +3021,11 @@ function saveNetworkSettings(){
     }
     
     if($('net_wifi_changed').checked || $('net_upnp_changed').checked){
-        if($('net_upnpenabled').checked != upnp_enabled || $('net_upnpport').value != upnp_port){
+        if($('net_upnpenabled').checked != upnp_enabled || $('net_upnpport').value != upnp_port || $('net_upnp_changed').checked){
             params += '&Cmd=SetUPnP.cgi';
             params += '&Enable=' + ($('net_upnpenabled').checked ? '1' : '0') + '&Port=' + $('net_upnpport').value + '&';
+
+	    params += '&WatchdogIP=' + $('wdog_ip').value + '&';
                     
             // if user is turning on upnp
             if($('net_upnpenabled').checked && !upnp_enabled){
@@ -3559,6 +3566,7 @@ function saveDynDNSSettings(){
     params += '&ProxyPort=' + proxy_port;
     params += '&ProxyUser=' + chkStr(proxy_user);
     params += '&ProxyPass=' + chkStr(proxy_pass);
+    params += '&WatchdogIP=' + chkStr(watchdog_ip);
    
     manualRequest("SetDDNS.cgi", params, saveDynDNSSettingsResponse);
 }

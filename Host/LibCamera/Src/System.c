@@ -592,6 +592,12 @@ int Config_SetIP(HTTPCONNECTION hConnection, LIST *pParamList, int iAction, XML 
 				g_ConfigParam.ulAsGateway[iInterface] = httpGetIP(pParamList, "Gateway");
 				bIsChange = TRUE;
 			}
+			//SIMON
+			if (httpIsExistParam(pParamList, "WatchdogIP"))
+			{
+				g_ConfigParam.ulAsGateway[iInterface] = httpGetIP(pParamList, "Gateway");
+				bIsChange = TRUE;
+			}
 		}
 
 		for (i = 0; i < 3; i++)
@@ -1626,6 +1632,7 @@ int Config_SetUPnP(HTTPCONNECTION hConnection, LIST *pParamList, int iAction, XM
 {
 	BOOL bEnableUPnP;
 	unsigned short usUPnPPort;
+	const char *acWatchdogIP;
 
 	switch (iAction)
 	{
@@ -1643,12 +1650,16 @@ int Config_SetUPnP(HTTPCONNECTION hConnection, LIST *pParamList, int iAction, XM
 			usUPnPPort = g_ConfigParam.usUPnPPort;
 
 
+		if (httpIsExistParam(pParamList, "WatchdogIP"))
+			acWatchdogIP = httpGetString(pParamList, "WatchdogIP");
 		if (bEnableUPnP != g_ConfigParam.bEnableUPnP
-			|| usUPnPPort != g_ConfigParam.usUPnPPort)
+			|| usUPnPPort != g_ConfigParam.usUPnPPort
+			|| strcmp(acWatchdogIP, g_ConfigParam.acWatchdogIP))
 		{
 			tt_rmutex_lock(&g_rmutex);
 			g_ConfigParam.bEnableUPnP = bEnableUPnP;
 			g_ConfigParam.usUPnPPort = usUPnPPort;
+			httpMyStrncpy(g_ConfigParam.acWatchdogIP, acWatchdogIP, sizeof(g_ConfigParam.acWatchdogIP));
 			tt_rmutex_unlock(&g_rmutex);
 			
 			WriteFlashMemory(&g_ConfigParam);
@@ -1689,6 +1700,7 @@ int Config_GetUPnP(HTTPCONNECTION hConnection, LIST *pParamList, int iAction, XM
 		tt_rmutex_lock(&g_rmutex);		
 		AddHttpNum(pReturnXML, "Enable", g_ConfigParam.bEnableUPnP);
 		AddHttpNum(pReturnXML, "Port", (int) (g_ConfigParam.usUPnPPort == 0 ? DEFAULT_UPNP_FIRST_EXT_PORT : g_ConfigParam.usUPnPPort));
+		AddHttpValue(pReturnXML, "WatchdogIP", g_ConfigParam.acWatchdogIP);
 		tt_rmutex_unlock(&g_rmutex);
 		
 		AddHttpValue(pReturnXML, "IP", acIP);

@@ -251,6 +251,9 @@ typedef struct
 	BOOL bEnableUPnP;
 	unsigned short usUPnPPort;
 
+	/* Watchdog */
+	char acWatchdogIP[32];		//SIMON
+
 	/* ะฃั้ฮป */
 	unsigned long ulCheckSum;
 } CAMERA_CONFIG_PARAM_T;

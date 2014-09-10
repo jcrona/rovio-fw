@@ -336,6 +336,84 @@ void NetTestThread(cyg_addrword_t arg)
 	close(listen_fd);
 }
 
+
+// SIMON
+#define HEAD_UP_COMMAND		"\x55\x11\x4D\x4D\x00\x01\x00\x53\x48\x52\x54\x00\x01\x00\x01\x0C\xFF\x00\x00\xFA\x02\xAA"
+#define HEAD_DOWN_COMMAND	"\x55\x11\x4D\x4D\x00\x01\x00\x53\x48\x52\x54\x00\x01\x00\x01\x0C\x00\x00\x00\xFB\x01\xAA"
+#define HEAD_STOP_COMMAND	"\x55\x11\x4D\x4D\x00\x01\x00\x53\x48\x52\x54\x00\x01\x00\x01\x00\x00\x00\x00\xEF\x01\xAA"
+
+int head_up(UINT32 degree)
+{
+	int i;
+
+	if (degree <= 0)
+		degree = 1;
+	else if (degree > 4)
+		degree = 4;
+	for (i=0; i<degree; i++) {
+		mcuSendCommand_NoResponse(HEAD_UP_COMMAND, 22);
+		//tt_usleep(degree);
+		mcuSendCommand_NoResponse(HEAD_STOP_COMMAND, 22);
+	}
+	return(0);
+}
+
+int head_down(UINT32 degree)
+{
+	int i;
+
+	if (degree <= 0)
+		degree = 1;
+	else if (degree > 4)
+		degree = 4;
+	for (i=0; i<degree; i++) {
+		mcuSendCommand_NoResponse(HEAD_DOWN_COMMAND, 22);
+		//tt_usleep(degree);
+		mcuSendCommand_NoResponse(HEAD_STOP_COMMAND, 22);
+	}
+	return(0);
+}
+
+// SIMON  added a new Misc.cgi
+int Config_Misc(HTTPCONNECTION hConnection, LIST *pParamList, int iAction, XML *pReturnXML)
+{
+	request *req = (request*)hConnection;
+
+	switch (iAction)
+	{
+	case CA_AUTH:
+		// SIMON  allow any user to issue debug.cgi
+		return AUTH_USER;
+	case CA_CONFIG:
+		{
+			char acBuf[128];
+			const char *pcAction = httpGetString(pParamList, "action");
+
+			//SIMON
+			if (strcmp(pcAction, "head_up") == 0)
+			{
+				UINT32 uValue = httpGetLong(pParamList, "value");
+				int rc = head_up(uValue);
+				sprintf(acBuf, "%d", uValue);
+				AddHttpValue(pReturnXML, "head_up", acBuf);
+				return 0;
+			}
+			else if (strcmp(pcAction, "head_down") == 0)
+			{
+				UINT32 uValue = httpGetLong(pParamList, "value");
+				int rc = head_down(uValue);
+				sprintf(acBuf, "%d", uValue);
+				AddHttpValue(pReturnXML, "head_down", acBuf);
+				return 0;
+			}
+			else
+				AddHttpValue(pReturnXML, "action", "error");
+			return 0;
+		}		
+	}
+	return -1;
+}
+
 #include "ppp.h"
 int Config_MemDebug(HTTPCONNECTION hConnection, LIST *pParamList, int iAction, XML *pReturnXML)
 {
@@ -853,6 +931,8 @@ void RegisterUrls()
 	RegisterSubCmd("SetDDNS.cgi", Config_SetDDNS);
 #endif
 	RegisterSubCmd("debug.cgi", Config_MemDebug);
+	// SIMON
+	RegisterSubCmd("Misc.cgi", Config_Misc);
 	RegisterSubCmd("GetMyself.cgi", Config_GetMyself);
 	RegisterSubCmd("GetUser.cgi", Config_GetUser);
 	RegisterSubCmd("SetUser.cgi", Config_SetUser);
@@ -915,6 +995,8 @@ void RegisterUrls()
 	RegisterSubCmd("GetUpdateProgress.cgi", Config_UpdateProgress);
 	httpRegisterEmbedFunEx("bin/ipcam.bin", Http_GetFirmware, AUTH_USER, NULL);
 	httpRegisterEmbedFunEx("GetAudio.cgi", Http_Post_Init, AUTH_USER, (void*)Http_GetAudio);
+	//SIMON
+	httpRegisterEmbedFunEx("GetRCAudio.cgi", Http_Post_Init, AUTH_USER, (void*)Http_GetRCAudio);
 	httpRegisterEmbedFunEx("webcam", Http_RtspTunnel, AUTH_USER, NULL);
 	httpRegisterEmbedFunEx("Cmd.cgi", Http_CommonCmdInit, AUTH_ANY, NULL);	
 	
@@ -1307,8 +1389,7 @@ void ServerStart(void)
 
 	cyg_thread_set_priority(cyg_thread_self(), PTD_PRIORITY);
 	// 开始http服务 	
-	httpdStartEx(pcDocRoot, aiPort,3600, 30 * 60 * 60 , 20, OnHttpInit, OnRequestBegin);	
-
+	httpdStartEx(pcDocRoot, aiPort,3600, 30 * 60 * 60 , 20, OnHttpInit, OnRequestBegin);
 }
 
 

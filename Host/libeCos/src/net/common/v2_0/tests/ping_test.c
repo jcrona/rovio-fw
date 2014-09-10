@@ -31,12 +31,12 @@
 
 // PING test code
 
-#include <network.h>
+#include "network.h"
 
-#include <pkgconf/system.h>
-#include <pkgconf/net.h>
+#include "pkgconf/system.h"
+#include "pkgconf/net.h"
 
-#include <cyg/infra/testcase.h>
+#include "cyg/infra/testcase.h"
 
 #ifdef CYGBLD_DEVS_ETH_DEVICE_H    // Get the device config if it exists
 #include CYGBLD_DEVS_ETH_DEVICE_H  // May provide CYGTST_DEVS_ETH_TEST_NET_REALTIME
@@ -85,11 +85,13 @@ static unsigned char pkt1[MAX_PACKET], pkt2[MAX_PACKET];
 
 #define UNIQUEID 0x1234
 
+#if 0
 void
 pexit(char *s)
 {
     CYG_TEST_FAIL_FINISH(s);
 }
+#endif
 
 // Compute INET checksum
 int
@@ -137,18 +139,17 @@ show_icmp(unsigned char *pkt, int len,
     tv = cyg_current_time();
     ip = (struct ip *)pkt;
     if ((len < sizeof(*ip)) || ip->ip_v != IPVERSION) {
-        diag_printf("%s: Short packet or not IP! - Len: %d, Version: %d\n", 
-                    inet_ntoa(from->sin_addr), len, ip->ip_v);
+        //diag_printf("%s: Short packet or not IP! - Len: %d, Version: %d\n", inet_ntoa(from->sin_addr), len, ip->ip_v);
         return 0;
     }
     icmp = (struct icmp *)(pkt + sizeof(*ip));
     len -= (sizeof(*ip) + 8);
     tp = (cyg_tick_count_t *)&icmp->icmp_data;
     if (icmp->icmp_type != ICMP_ECHOREPLY) {
-        diag_printf("%s: Invalid ICMP - type: %d\n", 
-                    inet_ntoa(from->sin_addr), icmp->icmp_type);
+        //diag_printf("%s: Invalid ICMP - type: %d\n", inet_ntoa(from->sin_addr), icmp->icmp_type);
         return 0;
     }
+/*
     if (icmp->icmp_id != UNIQUEID) {
         diag_printf("%s: ICMP received for wrong id - sent: %x, recvd: %x\n", 
                     inet_ntoa(from->sin_addr), UNIQUEID, icmp->icmp_id);
@@ -156,10 +157,11 @@ show_icmp(unsigned char *pkt, int len,
     diag_printf("%d bytes from %s: ", len, inet_ntoa(from->sin_addr));
     diag_printf("icmp_seq=%d", icmp->icmp_seq);
     diag_printf(", time=%dms\n", (int)(tv - *tp)*10);
+*/
     return (from->sin_addr.s_addr == to->sin_addr.s_addr);
 }
 
-static void
+static int
 ping_host(int s, struct sockaddr_in *host)
 {
     struct icmp *icmp = (struct icmp *)pkt1;
@@ -172,9 +174,10 @@ ping_host(int s, struct sockaddr_in *host)
 
     ok_recv = 0;
     bogus_recv = 0;
-    diag_printf("PING server %s\n", inet_ntoa(host->sin_addr));
-    for (seq = 0;  seq < NUM_PINGS;  seq++, icmp_len += PACKET_ADD ) {
-        TNR_ON();
+    //diag_printf("PING server %s\n", inet_ntoa(host->sin_addr));
+    //for (seq = 0;  seq < NUM_PINGS;  seq++, icmp_len += PACKET_ADD ) {
+	seq=0;
+        //TNR_ON();
         // Build ICMP packet
         icmp->icmp_type = ICMP_ECHO;
         icmp->icmp_code = 0;
@@ -191,61 +194,71 @@ ping_host(int s, struct sockaddr_in *host)
         // Add checksum
         icmp->icmp_cksum = inet_cksum( (u_short *)icmp, icmp_len+8);
         // Send it off
-        if (sendto(s, icmp, icmp_len+8, 0, (struct sockaddr *)host, sizeof(*host)) < 0) {
-            TNR_OFF();
-            perror("sendto");
-            continue;
+        if (sendto(s, (const void *) icmp, icmp_len+8, 0, (struct sockaddr *)host, sizeof(*host)) < 0) {
+            //TNR_OFF();
+            //perror("sendto");
+            //continue;
+	    return(0);
         }
         // Wait for a response
         fromlen = sizeof(from);
-        len = recvfrom(s, pkt2, sizeof(pkt2), 0, (struct sockaddr *)&from, &fromlen);
-        TNR_OFF();
+        len = recvfrom(s, pkt2, sizeof(pkt2), 0, (struct sockaddr *)&from, (socklen_t *)&fromlen);
+        //TNR_OFF();
         if (len < 0) {
-            perror("recvfrom");
+            //perror("recvfrom");
             icmp_len = MIN_PACKET - PACKET_ADD; // just in case - long routes
+	    return(0);
         } else {
             if (show_icmp(pkt2, len, &from, host)) {
-                ok_recv++;
+                //ok_recv++;
+		return(1);
             } else {
-                bogus_recv++;
+                //bogus_recv++;
+		return(0);
             }
         }
-    }
-    TNR_OFF();
-    diag_printf("Sent %d packets, received %d OK, %d bad\n", NUM_PINGS, ok_recv, bogus_recv);
+    //}
+    //TNR_OFF();
+    //diag_printf("Sent %d packets, received %d OK, %d bad\n", NUM_PINGS, ok_recv, bogus_recv);
 }
 
-static void
-ping_test(struct bootp *bp)
+int 
+ping_test(char *ping_ipaddr)
 {
     struct protoent *p;
     struct timeval tv;
     struct sockaddr_in host;
     int s;
+    int ping_rc;
 
     if ((p = getprotobyname("icmp")) == (struct protoent *)0) {
-        pexit("getprotobyname");
-        return;
+        //pexit("getprotobyname");
+        return(0);
     }
     s = socket(AF_INET, SOCK_RAW, p->p_proto);
     if (s < 0) {
-        pexit("socket");
-        return;
+        //pexit("socket");
+        return(0);
     }
     tv.tv_sec = 1;
     tv.tv_usec = 0;
     setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+
     // Set up host address
     host.sin_family = AF_INET;
     host.sin_len = sizeof(host);
-    host.sin_addr = bp->bp_siaddr;
+    //host.sin_addr = bp->bp_siaddr;
+    inet_aton(ping_ipaddr, &(host.sin_addr));
     host.sin_port = 0;
-    ping_host(s, &host);
+    ping_rc = ping_host(s, &host);
     // Now try a bogus host
-    host.sin_addr.s_addr = htonl(ntohl(host.sin_addr.s_addr) + 32);
-    ping_host(s, &host);
+    //host.sin_addr.s_addr = htonl(ntohl(host.sin_addr.s_addr) + 32);
+    //ping_host(s, &host);
+    close(s);
+    return(ping_rc);
 }
 
+#if 0
 void
 net_test(cyg_addrword_t p)
 {
@@ -282,3 +295,4 @@ cyg_start(void)
     cyg_thread_resume(thread_handle);  // Start it
     cyg_scheduler_start();
 }
+#endif
