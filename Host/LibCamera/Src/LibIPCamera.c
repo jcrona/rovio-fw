@@ -342,6 +342,8 @@ void NetTestThread(cyg_addrword_t arg)
 #define HEAD_DOWN_COMMAND	"\x55\x11\x4D\x4D\x00\x01\x00\x53\x48\x52\x54\x00\x01\x00\x01\x0C\x00\x00\x00\xFB\x01\xAA"
 #define HEAD_STOP_COMMAND	"\x55\x11\x4D\x4D\x00\x01\x00\x53\x48\x52\x54\x00\x01\x00\x01\x00\x00\x00\x00\xEF\x01\xAA"
 
+#define BLUE_LEDS_BASE_COMMAND	"\x4D\x4D\x00\x01\x00\x53\x48\x52\x54\x00\x01\x00\x01\x1A\x00\x00\x00"
+
 int head_up(UINT32 degree)
 {
 	int i;
@@ -371,6 +373,18 @@ int head_down(UINT32 degree)
 		//tt_usleep(degree);
 		mcuSendCommand_NoResponse(HEAD_STOP_COMMAND, 22);
 	}
+	return(0);
+}
+
+int blue_led_ctrl(UINT8 led_mask)
+{
+	char msg[] = BLUE_LEDS_BASE_COMMAND;
+
+	/* The msg[14] byte controls the 6 LEDs */
+	msg[14] = led_mask & 0x3F;
+
+	ictlCtrlMCURaw(msg, 17);
+
 	return(0);
 }
 
@@ -404,6 +418,14 @@ int Config_Misc(HTTPCONNECTION hConnection, LIST *pParamList, int iAction, XML *
 				int rc = head_down(uValue);
 				sprintf(acBuf, "%d", uValue);
 				AddHttpValue(pReturnXML, "head_down", acBuf);
+				return 0;
+			}
+			else if (strcmp(pcAction, "blue_led") == 0)
+			{
+				UINT8 uValue = httpGetULong(pParamList, "value") & 0xFF;
+				int rc = blue_led_ctrl(uValue);
+				sprintf(acBuf, "%d", uValue);
+				AddHttpValue(pReturnXML, "blue_led", acBuf);
 				return 0;
 			}
 			else

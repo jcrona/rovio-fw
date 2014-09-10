@@ -438,6 +438,48 @@ div#obstacle_detected
 #headlight.light__clicked {
     background-position: -206px -825px;
 }
+#bluelight_off {
+	background: url('../img/bluelight_off.gif') no-repeat top left;
+	background-position: 0px 0px;
+    width: 44px; height: 44px;
+    top: -5px;
+    cursor: pointer;
+}
+#bluelight_off:hover {
+	background: url('../img/bluelight_hover.gif') no-repeat top left;
+	background-position: 0px 0px;
+}
+#bluelight_on {
+	background: url('../img/bluelight_on.gif') no-repeat top left;
+	background-position: 0px 0px;
+    width: 44px; height: 44px;
+    top: -5px;
+    cursor: pointer;
+}
+#bluelight_on:hover {
+	background: url('../img/bluelight_hover.gif') no-repeat top left;
+	background-position: 0px 0px;
+}
+#head_up {
+    top: -249px; left: 142px;
+    background-position: 0 -841px;
+}
+#head_up:hover {
+	background-position: 0 -1013px;
+}
+#head_up.move_arrow__clicked {
+	background-position: 0 -927px;
+}
+#head_down {
+    top: -179px; left: 142px;
+    background-position: 0 -67px;
+}
+#head_down:hover {
+	background-position: 0 -239px;
+}
+#head_down.move_arrow__clicked {
+	background-position: 0 -153px;
+}
 #cam_down {
     background: url('../img/main_images.gif') no-repeat top left;
 	background-position: -412px -1242px;

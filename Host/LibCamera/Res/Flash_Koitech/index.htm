@@ -122,6 +122,13 @@
                             <input type="image" id="snapshot" src="img/btns/snapshot.gif" onmouseout="this.src='img/btns/snapshot.gif'; hideToolTip();" onmouseover="this.src='img/btns/snapshot_over.gif'; showToolTipId(this.id);" onmousedown="this.src='img/btns/snapshot_down.gif';" onmouseup="this.src = 'img/btns/snapshot.gif';" onclick="openPhotoAndSend();" />                       
                             </td>
                         </tr>
+                        <tr>
+                            <td><div id="bluelight_on" class="light" onclick="bluelight(255);"></div></td>
+                            <td><div id="bluelight_off" class="light" onclick="bluelight(0);"></div></td>
+                            <td><div id="head_up" class="move_arrow" onclick="headup(0);"></div></td>
+                            <td><div id="head_down" class="move_arrow" onclick="headdown(0);"></div></td>
+                            </td>
+                        </tr>
                     </table>
                 </div>
                 

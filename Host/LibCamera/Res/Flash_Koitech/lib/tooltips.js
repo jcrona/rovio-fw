@@ -48,6 +48,22 @@ function showToolTipId(id){
             }
             top = '-160px'; left = '0px';
             break;
+        case 'bluelight_on':
+            text = 'Turn blue lights on';
+            top = '-160px'; left = '0px';
+            break;
+        case 'bluelight_off':
+            text = 'Turn blue lights off';
+            top = '-160px'; left = '0px';
+            break;
+        case 'head_up':
+            text = "Move head up";
+            top = '-160px'; left = '90px';
+            break;
+        case 'head_down':
+            text = "Move head down";
+            top = '-160px'; left = '90px';
+            break;
         case 'snapshot':
             text = "Take photo";
             top = '-160px'; left = '178px';
@@ -214,7 +230,7 @@ function hideToolTip(){
 }
 
 function addTooltips(){
-    var btnIds = new Array("room_id", "battery_charged", "battery_charging", "battery_level", "status", "nav_signal", "wifi_signal", "maintain_ratio", "joystick", "home","savehome", "cam_down", "cam_mid", "cam_up", "headlight", "record", "delete_path", "reset", "stop", "move_forward", "move_left", "move_right", "move_back", "rotr_03", "rotr_07", "rotr_11", "rotr_15", "rotl_03", "rotl_07", "rotl_11", "rot_left", "rot_right", "online_status");
+    var btnIds = new Array("room_id", "battery_charged", "battery_charging", "battery_level", "status", "nav_signal", "wifi_signal", "maintain_ratio", "joystick", "home","savehome", "cam_down", "cam_mid", "cam_up", "headlight", "bluelight_on", "bluelight_off", "head_up", "head_down", "record", "delete_path", "reset", "stop", "move_forward", "move_left", "move_right", "move_back", "rotr_03", "rotr_07", "rotr_11", "rotr_15", "rotl_03", "rotl_07", "rotl_11", "rot_left", "rot_right", "online_status");
     
     for(i = 0; i < btnIds.length; i++){
         $(btnIds[i]).onmouseover = showToolTip;

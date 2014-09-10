@@ -1969,6 +1969,15 @@ function keyboardUp(e){
 function headlight(on) {
 	sendCommand("rev.cgi","Cmd=nav&action=19&LIGHT="+on);
 }
+function bluelight(val) {
+	sendCommand("Misc.cgi","action=blue_led&value="+val);
+}
+function headup(val) {
+	sendCommand("Misc.cgi","action=head_up&value="+val);
+}
+function headdown(val) {
+	sendCommand("Misc.cgi","action=head_down&value="+val);
+}
 function openSettingsDialog() {
     if(!access_settings_panel){
         alert('Please wait updating settings panel.');

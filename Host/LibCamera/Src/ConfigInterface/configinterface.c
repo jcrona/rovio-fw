@@ -1405,6 +1405,13 @@ extern int hi_uart_read( char *buf, size_t size );
 
 
 
+#define MPC_MAX_REV_BUFFER_SIZE \
+		( sizeof(pCMD->ucLeading) \
+		+ sizeof(pCMD->ucLength) \
+		+ sizeof(unsigned char) * 256 \
+		+ sizeof(pCMD->aucChecksum) \
+		+ sizeof(pCMD->ucSuffix) )
+
 int ictlCtrlMCU(ICTL_HANDLE_T *pHandle,
 	const char *pcCommand,
 	char *pcResponse,
@@ -1420,12 +1427,6 @@ int ictlCtrlMCU(ICTL_HANDLE_T *pHandle,
 		int len;
 		char *pc;
 		MPU_CMD_T *pCMD = NULL;
-#define MPC_MAX_REV_BUFFER_SIZE \
-		( sizeof(pCMD->ucLeading) \
-		+ sizeof(pCMD->ucLength) \
-		+ sizeof(unsigned char) * 256 \
-		+ sizeof(pCMD->aucChecksum) \
-		+ sizeof(pCMD->ucSuffix) )
 		
 		int mpcBuf[(MPC_MAX_REV_BUFFER_SIZE + sizeof(int) - 1) / sizeof(int)];
 		unsigned short usCheckSum = 0;
@@ -1479,6 +1480,44 @@ int ictlCtrlMCU(ICTL_HANDLE_T *pHandle,
 				pcResponse += 2;
 			}
 		}		
+	}
+	
+	return ICTL_OK;
+}
+
+
+int ictlCtrlMCURaw(const char *pcCommand, UINT8 length)
+{
+	if (pcCommand != NULL )
+	{
+		size_t i;
+		char *pc;
+		MPU_CMD_T *pCMD = NULL;
+		int mpcBuf[(MPC_MAX_REV_BUFFER_SIZE + sizeof(int) - 1) / sizeof(int)];
+		unsigned short usCheckSum = 0;
+		unsigned char ucMPU_CmdLength = length;
+	
+		pCMD = (MPU_CMD_T *)mpcBuf;				
+
+		/* Create the command HEX array */
+		memcpy (&pCMD->aucEndian, pcCommand, ucMPU_CmdLength);
+		pCMD->ucLeading	= '\x55';
+		pCMD->ucLength		= ucMPU_CmdLength;
+		pCMD->ucSuffix		= '\xAA';
+
+		pc = (char *) &pCMD->ucLength;
+		for (i = 0; i <= (int)ucMPU_CmdLength; i++ )
+			usCheckSum += (unsigned char) pc[i];
+		memcpy (&pCMD->aucChecksum, &usCheckSum, sizeof (usCheckSum));				
+		
+#if defined IPCAM_CONFIG_IP_CAM_VER_1 || defined IPCAM_CONFIG_IP_CAM_VER_2 || defined IPCAM_CONFIG_IP_CAM_VER_3
+		mcuSendCommand_NoResponse((const char *) pCMD,
+				sizeof (MPU_CMD_T) - (offsetof(MPU_CMD_T, aucChecksum) - offsetof(MPU_CMD_T, aucEndian)) + ucMPU_CmdLength);
+#elif defined IPCAM_CONFIG_IP_CAM_VER_0 || defined IPCAM_CONFIG_MP4_EVB_VER_0 || defined IPCAM_CONFIG_MP4_EVB_VER_1
+		pCMD->ucLength = 0;
+#else
+#	error "No hardware config defined!"
+#endif
 	}
 	
 	return ICTL_OK;

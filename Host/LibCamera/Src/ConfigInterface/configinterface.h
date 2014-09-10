@@ -97,6 +97,7 @@ int ictlCtrlMCU(ICTL_HANDLE_T *pHandle,
 	const char *pcCommand,
 	char *pcResponse,
 	size_t szMaxResponse);
+int ictlCtrlMCURaw(const char *pcCommand, UINT8 length);
 						
 #if 0
 int ictlReadStatusCode( const char *pcStatus, CFG_STATUS *pStatus );
